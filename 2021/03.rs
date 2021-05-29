@@ -6,17 +6,49 @@ use std::collections::HashMap;
 
 const SLABINFO_HEADER: &str = "slabinfo - version: 2.1\n";
 
+/*# name
+1: <active_objs>
+2: <num_objs>
+3: <objsize>
+4: <objperslab>
+5: <pagesperslab>
+6:
+7: tunables
+8: <limit>
+9: <batchcount>
+10: <sharedfactor>
+11:
+12: slabdata
+13: <active_slabs>
+14: <num_slabs>
+15: <sharedavail>
+*/
+
 #[derive(Debug, PartialEq)]
 struct Slabinfo {
   name: String,
-  active_objs: i32,
+  active_objs:  i32,
+  num_objs:     i32,
+  objsize:      i32,
+  objperslab:   i32,
+  pagesperslab: i32,
+  active_slabs: i32,
+  num_slabs:    i32,
+  total_size:   i32,
 }
 
 impl Slabinfo {
   fn new(a: &Vec<&str>) -> Result<Slabinfo, ParseIntError> {
     Ok(Slabinfo {
       name: a[0].to_string(),
-      active_objs: i32::from_str(a[1])?
+      active_objs:  i32::from_str(a[1])?,
+      num_objs:     i32::from_str(a[2])?,
+      objsize:      i32::from_str(a[3])?,
+      objperslab:   i32::from_str(a[4])?,
+      pagesperslab: i32::from_str(a[5])?,
+      active_slabs: i32::from_str(a[13])?,
+      num_slabs:    i32::from_str(a[14])?,
+      total_size:   4096 * i32::from_str(a[5])? * i32::from_str(a[13])?,
     })
   }
 
@@ -25,7 +57,14 @@ impl Slabinfo {
       Some(
         Slabinfo {
           name: self.name.clone(),
-          active_objs: self.active_objs - s.active_objs
+          active_objs:  self.active_objs  - s.active_objs,
+          num_objs:     self.num_objs     - s.num_objs,
+          objsize:      self.objsize,
+          objperslab:   self.objperslab,
+          pagesperslab: self.pagesperslab,
+          active_slabs: self.active_slabs - s.active_slabs,
+          num_slabs:    self.num_slabs    - s.num_slabs,
+          total_size:   self.total_size   - s.total_size,
         }
       )
     } else {
@@ -135,15 +174,33 @@ fn main() {
       .map(|k| (k, option_diff(&current.get(*k), &prev.get(*k))))
       .filter(|x| x.1 != None)
       .map(|x| (x.0, x.1.unwrap()))
-      .filter(|x| x.1.active_objs != 0)
+      .filter(|x| x.1.total_size != 0)
       .collect::<Vec<_>>();
     
-    tmp.sort_by(|a, b| (&b).1.active_objs
-                  .partial_cmp(&a.1.active_objs).unwrap());
+    tmp.sort_by(|a, b| (&b).1.total_size
+                  .partial_cmp(&a.1.total_size).unwrap());
 
     println!("-------------------");
+    println!("{:20} {:>13} {:>13} {:>12} {:>12} {:>12} {:>12}",
+      "#name",
+      "*active_objs",
+      "*active_slabs",
+      "objsize",
+      "objperslab",
+      "pagesperslab",
+      "*total_size"
+    );
     for e in tmp {
-      println!("{:20} {}", e.0, e.1.active_objs);
+      let s = e.1;
+      println!("{:20} {:13} {:13} {:>12} {:>12} {:12} {:>12}", 
+        e.0,
+        s.active_objs,
+        s.active_slabs,
+        s.objsize,
+        s.objperslab,
+        s.pagesperslab,
+        s.total_size,
+      );
     }
   }
 }
