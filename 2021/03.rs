@@ -148,21 +148,8 @@ impl Iterator for Info {
   }
 }
 
-fn option_diff(x: &Option<&Slabinfo>, y: &Option<&Slabinfo>) -> Option<Slabinfo> {
-  if let Some(s1) = x {
-    if let Some(s2) = y {
-      return s1.minus(s2);
-    }
-  }
-  None
-}
-
 fn main() {
   let v = Info::new().collect::<Vec<_>>();
-
-  if v.len() == 0 {
-    return;
-  } 
 
   let keys = &v[0]
     .keys()
@@ -171,7 +158,9 @@ fn main() {
   for (current, prev) in v[1..].iter().zip(v.iter()) {
     let mut tmp = keys
       .iter()
-      .map(|k| (k, option_diff(&current.get(*k), &prev.get(*k))))
+      .map(|k| (k, current.get(*k).zip(prev.get(*k))
+                     .map(|a| a.0.minus(a.1))
+                     .flatten()))
       .filter(|x| x.1 != None)
       .map(|x| (x.0, x.1.unwrap()))
       .filter(|x| x.1.total_size != 0)
