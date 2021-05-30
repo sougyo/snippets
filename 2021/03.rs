@@ -159,15 +159,15 @@ fn main() {
     let mut tmp = keys
       .iter()
       .map(|k| (k, current.get(*k).zip(prev.get(*k))
-                     .map(|a| a.0.minus(a.1))
+                     .map(|(c,p)| c.minus(p)) // current minus prev
                      .flatten()))
-      .filter(|x| x.1 != None)
-      .map(|x| (x.0, x.1.unwrap()))
-      .filter(|x| x.1.total_size != 0)
+      .filter(|(_,o)| *o != None)
+      .map(|(k,o)| (k, o.unwrap()))
+      .filter(|(_,s)| s.total_size != 0)
       .collect::<Vec<_>>();
     
-    tmp.sort_by(|a, b| (&b).1.total_size
-                  .partial_cmp(&a.1.total_size).unwrap());
+    tmp.sort_by(|(_,s1), (_,s2)| s2.total_size
+                  .partial_cmp(&s1.total_size).unwrap());
 
     println!("-------------------");
     println!("{:20} {:>13} {:>13} {:>12} {:>12} {:>12} {:>12}",
