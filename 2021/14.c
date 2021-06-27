@@ -9,7 +9,7 @@ static void *my_seq_start(struct seq_file *s, loff_t *pos) {
 	if (*pos == 0) {
 		return &counter;
 	} else {
-    counter = 0;
+		counter = 0;
 		*pos = 0;
 		return NULL;
 	}
@@ -22,8 +22,8 @@ static void *my_seq_next(struct seq_file *s, void *v, loff_t *pos) {
 
 	if (*pos >= 10) {
 		return NULL;
-  }
-  return v;
+	}
+	return v;
 }
 
 static void my_seq_stop(struct seq_file *s, void *v) {
@@ -48,7 +48,7 @@ static int my_open(struct inode *inode, struct file *file) {
 };
 
 static const struct proc_ops proc_example_operations = {
-  .proc_open    = my_open,
+	.proc_open    = my_open,
 	.proc_read    = seq_read,
 	.proc_lseek   = seq_lseek,
 	.proc_release = seq_release
