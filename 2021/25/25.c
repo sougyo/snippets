@@ -36,7 +36,7 @@ STANDARD_PARAM_DEF(hexint,      unsigned int,           "%#08x",        kstrtoui
 
 MODULE_LICENSE("GPL");
 
-int param1_val;
+int param1_val = 0;
 module_param_cb(param1, &param_ops_hexint, &param1_val, 0600);
 
 static int __init my_module_init(void) {
