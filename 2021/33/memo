@@ -1,0 +1,2 @@
+nasm boot.s -l boot.lst -o boot.img
+qemu-system-x86_64 -nographic -drive file=boot.img,format=raw
